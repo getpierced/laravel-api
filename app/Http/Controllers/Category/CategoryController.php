@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Category;
 
 use App\Category;
-use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
+use Illuminate\Http\Request;
 
 class CategoryController extends ApiController
 {
@@ -19,7 +19,7 @@ class CategoryController extends ApiController
         return $this->showAll($categories);
     }
 
-        /**
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -56,7 +56,15 @@ class CategoryController extends ApiController
      */
     public function update(Request $request, Category $category)
     {
-        //
+        $category->fill($request->only([
+            'name',
+            'description',
+        ]));
+        if ($category->isClean()) {
+            return $this->errorResponse('You need to specify any different value to update', 422);
+        }
+        $category->save();
+        return $this->showOne($category);
     }
 
     /**
@@ -67,6 +75,7 @@ class CategoryController extends ApiController
      */
     public function destroy(Category $category)
     {
-        //
+        $category->delete();
+        return $this->showOne($category);
     }
 }
