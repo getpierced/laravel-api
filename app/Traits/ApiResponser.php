@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 trait ApiResponser
 {
@@ -14,15 +14,15 @@ trait ApiResponser
 
     protected function errorResponse($message, $code)
     {
-        return response()->json(['error' => $message, 'code' =>$code], $code);
+        return response()->json(['error' => $message, 'code' => $code], $code);
     }
     protected function showAll(Collection $collection, $code = 200)
     {
-        if ($collection->isEmpty()){
+        if ($collection->isEmpty()) {
             return $this->successResponse(['data' => $collection], $code);
         }
         $transformer = $collection->first()->transformer;
-
+        $collection = $this->sortData($collection, $transformer);
         $collection = $this->transformData($collection, $transformer);
 
         return $this->successResponse($collection, $code);
@@ -39,6 +39,16 @@ trait ApiResponser
     {
         return $this->successResponse(['data' => $message], $code);
     }
+
+    protected function sortData(Collection $collection, $transformer)
+    {
+        if (request()->has('sort_by')) {
+            $attribute = $transformer::originalAttribute(request()->sort_by);
+            $collection = $collection->sortBy->{$attribute};
+        }
+        return $collection;
+    }
+
     protected function transformData($data, $transformer)
     {
         $transformation = fractal($data, new $transformer);
